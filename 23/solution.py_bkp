@@ -1,0 +1,100 @@
+import sys
+import json
+
+class linkedlist():
+    class item():
+        def __init__(self,value):
+            self.value = value
+            self.succ = None
+        def __str__(self):
+            return f'{self.value}'
+        def __repr__(self):
+            return str(self)
+    
+    def __init__(self,values,first=None):
+        self.items = {value:linkedlist.item(value) for value in values}
+        for i,_ in enumerate(values):
+            self.items[values[i]].succ = self.items[values[(i+1)%len(values)]]
+        self.mod = max(values)+1
+        self.first = self.items[values[0]]
+        self.last = self.items[values[-1]]
+
+    def __iter__(self):
+        yield(self.first.value)
+        current = self.first.succ
+        while current != self.first:
+            yield(current.value)
+            current = current.succ
+        
+    def point_at(self,value):
+        self.first = self.items[value]
+        
+    def insert(self,sublist):
+        self.items.update(sublist.items)
+        before = self.first.succ
+        self.first.succ = sublist.first
+        sublist.last.succ = before
+    
+    def remove(self,after,count):
+        first = after.succ
+        before = first
+        values = []
+        for _ in range(count):
+            values.append(before.value)
+            before = before.succ
+        after.succ = before
+        for value in values: self.items.pop(value)
+        new = linkedlist(values)
+        return new
+
+    def __str__(self):
+        return ' '.join(map(str,list(self)))
+
+
+    def turn(self):
+        save = self.first
+        current = self.first.value - 1
+        sub = self.remove(self.first,3)
+        while current not in self.items:
+            current = (current-1)%self.mod
+        #print(current)
+        self.first = self.items[current]
+        #print(sub)
+        self.insert(sub)
+        self.first = save.succ
+
+
+
+
+cups = list(map(int,sys.stdin.readline()))
+game = linkedlist(cups)
+for i in range(100):
+    print(game)
+    game.turn()
+    print()
+print(game)
+
+game.point_at(1)
+print(list(game))
+print(''.join(map(str,list(game)[1:])))
+
+
+cups.extend(range(max(cups)+1,1000001))
+game = linkedlist(cups)
+for i in range(10000000):
+    if not i% 10000: print(i)
+    game.turn()
+#print(game)
+
+game.point_at(1)
+#print(list(game))
+
+print()
+a = 0
+b = 0
+for i,n in zip(range(3),iter(game)):
+    a = b
+    b = n
+    print(n)
+print(a,b,a*b)
+#print(''.join(map(str,list(game)[1:3])))
